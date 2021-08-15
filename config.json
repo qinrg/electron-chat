@@ -1,0 +1,8 @@
+{
+    "Port": "3001",
+    "Dbhostsip": "118.25.101.202",
+    "Dbprot": "3306",
+    "Dbusername": "root",
+    "Dbpassowrd": "qinrg.520",
+    "Dbname": "w3cjs"
+}
