@@ -138,11 +138,21 @@ Vue.prototype.urlParam = (name) => {
     if (r != null) return unescape(r[2]);
     return ""; //返回参数值
 }
-Vue.prototype.ok = (e) => {
-    Message({ message: "" + e, type: "success", duration: 1500 });
+Vue.prototype.ok = (e, time) => {
+    Message({
+        message: "" + e,
+        type: "success",
+        duration: time ? time : 1500,
+        offset: 30
+    });
 }
-Vue.prototype.err = (e) => {
-    Message({ message: "" + e, type: "warning", duration: 1500 });
+Vue.prototype.err = (e, time) => {
+    Message({
+        message: "" + e,
+        type: "warning",
+        duration: time ? time : 1500,
+        offset: 30
+    });
 }
 Vue.prototype.$moment = moment
 /* eslint-disable no-new */

@@ -1,8 +1,15 @@
+/*
+ * @Author: qinruiguang
+ * @LastEditors: qinruiguang
+ * @Date: 2021-08-13 10:59:49
+ * @LastEditTime: 2021-08-26 12:31:03
+ */
 let fs = require('fs')
 let path = require('path')
 let os = require('os')
-let userInfo = os.userInfo().homedir
-let isdb = path.join(userInfo, 'guangVideo/data/config.db')
+// let userInfo = os.userInfo().homedir
+let { app } = require('electron')
+let isdb = path.join(app.getPath('home'), 'guangVideo/data/config.db')
 let sqlite3 = require('sqlite3').verbose()
 let { filecopy } = require("./file")
 //创建数据文件夹
@@ -70,6 +77,17 @@ let configFile = async () => {    /**
          "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
          "value" text,
          "startDate" text
+       );
+     `)
+    }, 100)
+    setTimeout(() => {
+        sqldata(`
+     CREATE TABLE "config" (
+         "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
+         "uuid" text,
+         "key" text,
+         "value" text,
+         "remark" text
        );
      `)
     }, 100)

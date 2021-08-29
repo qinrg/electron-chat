@@ -2,7 +2,7 @@
  * @Author: qinruiguang
  * @LastEditors: qinruiguang
  * @Date: 2021-08-02 09:16:12
- * @LastEditTime: 2021-08-04 15:26:52
+ * @LastEditTime: 2021-08-27 18:01:44
  */
 let ffi = require("ffi-napi");
 let path = require("path");
@@ -35,15 +35,25 @@ export let MouseToggle = (k, kt) => {
         vlog.info("地址不对", dev ? devmain : buildmain);
     }
 }
+export let snipping = (x, y, w, h, n) => {
+    vlog.info("截图操作，截图坐标x=" + x + ",y=" + y + ",宽=" + w + "高=" + h + "图片名称:" + n);
+    if (dll) {
+        return dll.snipping(x, y, w, h, n);
+    } else {
+        vlog.info("地址不对", dev ? devmain : buildmain);
+    }
+}
 let filedll = () => {
+    vlog.info("路径正确，开始读取", dev ? "开发" + devmain : "正式" + buildmain);
+    if (devmain.indexOf("-1") >= 0 || buildmain.indexOf("-1") >= 0) return vlog.info("执行dll不存在")
     if (fs.existsSync(dev ? devmain : buildmain)) {
-        vlog.info("路径正确，开始读取", dev ? "开发" + devmain : "正式" + buildmain);
         dll = ffi.Library(dev ? devmain : buildmain, {
             Init: ["int", ["int"]], //传输0打开键盘鼠标 1 关闭
             KeyTap: ["int", ["string", "string", "string"]],
             MoveMouse: ["int", ["int", "int"]],
             MouseClick: ["int", ["string"]],
-            MouseToggle: ["int", ["string", "string"]]
+            MouseToggle: ["int", ["string", "string"]],
+            snipping: ["string", ["int", "int", "int", "int", "string"]]
         });
     }
     let ca = dll ? dll.Init(0) : "失败";

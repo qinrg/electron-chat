@@ -2,7 +2,7 @@
  * @Author: qinruiguang
  * @LastEditors: qinruiguang
  * @Date: 2021-03-24 14:49:48
- * @LastEditTime: 2021-08-10 13:38:57
+ * @LastEditTime: 2021-08-27 17:02:48
  */
 import Vue from 'vue'
 import Router from 'vue-router'
@@ -53,7 +53,11 @@ const router = new Router({
             name: 'controlled',
             component: (resolve) => require(["@/components/controlled"], resolve),
         }, //controlled 媒体流获取
-
+        {
+            path: "/snipping",
+            name: 'snipping',
+            component: (resolve) => require(["@/components/snipping/snipping"], resolve),
+        },
         {
             path: '*',
             redirect: '/login'

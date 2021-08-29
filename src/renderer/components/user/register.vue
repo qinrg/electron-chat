@@ -2,7 +2,7 @@
  * @Author: qinruiguang
  * @LastEditors: qinruiguang
  * @Date: 2021-08-10 13:34:48
- * @LastEditTime: 2021-08-10 18:30:49
+ * @LastEditTime: 2021-08-17 10:19:15
 -->
 <template>
   <div class="main">
@@ -89,6 +89,7 @@ export default {
       email: "",
       upwd: "",
       text: null,
+      isbtn: false,
     };
   },
   components: {
@@ -96,10 +97,18 @@ export default {
   },
   methods: {
     onReg() {
+      let reg =
+        /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,5}$/;
       if (this.uname == "") return this.err("请输入您的昵称");
       if (this.email == "") return this.err("请输入您的邮箱");
+      if (!reg.test(this.email)) return this.err("请输入正确的邮箱！");
       if (this.upwd == "") return this.err("请输入您的密码");
       console.log(this.uname, this.email);
+      if (this.isbtn) return;
+      this.isbtn = true;
+      setTimeout(() => {
+        this.isbtn = false;
+      }, 3000);
       this.post("/lt/reg", {
         uname: this.uname,
         email: this.email,
@@ -107,13 +116,15 @@ export default {
       }).then((res) => {
         console.log(res);
         if (res.code == 200) {
-          this.ok(res.msg);
+          this.ok(res.msg, 2000);
           this.text = {
             uuid: res.uuid,
             upwd: this.upwd,
             uname: this.uname,
             email: this.email,
           };
+        } else {
+          this.err(res.msg, 3000);
         }
       });
     },

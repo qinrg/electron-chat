@@ -136,10 +136,10 @@ function electronLog(data, color) {
   })
   if (/[0-9A-z]+/.test(log)) {
     console.log(
-      chalk[color].bold('┏ Electron -------------------') +
+      chalk[color].bold('┏ 日志' + new Date() + '-----------') +
       '\n\n' +
       log +
-      chalk[color].bold('┗ ----------------------------') +
+      chalk[color].bold('┗ ---------------------------------------------------------------') +
       '\n'
     )
   }

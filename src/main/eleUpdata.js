@@ -2,19 +2,20 @@
  * @Author: qinruiguang
  * @LastEditors: qinruiguang
  * @Date: 2021-07-13 18:00:15
- * @LastEditTime: 2021-08-04 18:14:21
+ * @LastEditTime: 2021-08-26 17:20:21
  */
 //更新模块
-export let eleupdata = (e, win, ipc) => {
-    console.log(e)
-    // 注意这个autoUpdater不是electron中的autoUpdater 
-    let {
-        autoUpdater
-    } = require("electron-updater");
-    let os = require("os")
+let { app, ipcMain, globalShortcut, } = require('electron')
+let {
+    autoUpdater
+} = require("electron-updater");
+let os = require("os")
+export let eleupdata = (e) => {
+    // 注意这个autoUpdater不是electron中的autoUpdater     
     // import { red } from 'ansi-colors'; 
-    let uploadUrl = "https://w3cjs.cn/updata/webrtc/" + os.arch() + "/"
-    // let uploadUrl = "http://127.0.0.1:3000/updata/"
+    // let uploadUrl = "https://w3cjs.cn/updata/webrtc/" + os.arch() + "/"
+    let uploadUrl = "http://127.0.0.1:8899/updata/"
+    let issend = false
     let msg = {
         isupdate: {
             msg: '检查更新'
@@ -49,7 +50,6 @@ export let eleupdata = (e, win, ipc) => {
         sendUpdateMessage(msg.isupdate)
     });
     autoUpdater.on('update-available', function (info) {
-        // console.log(info)
         console.log("可更新")
         sendUpdateMessage(msg.yesupdate)
     });
@@ -65,34 +65,32 @@ export let eleupdata = (e, win, ipc) => {
         sendUpdateMessage(msg.fileupdate)
     })
     autoUpdater.on('update-downloaded', function (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) {
-        // ipc.on('window-updata', function () {
-        //     //退出安装
-        //     autoUpdater.quitAndInstall(); //更新
-        // });
-        let issend=false
-        win.forEach(e=>{
-            if(!issend){
-                issend=true
-                e.send('message', { type: 'isUpdateNow' })
-            }
-        })
+        //给前端传递下载进度
+        let issend = false
+        if (!issend) {
+            issend = true
+            // console.log("--------------------1", winobj);
+            winobj.get("001") ? winobj.get("001").send('message', { type: 'isUpdateNow' }) : winobj.get("002").send('message', { type: 'isUpdateNow' })
+
+        }
     });
-    ipc.on("checkForUpdate", () => {
-        //执行自动更新检查
-        // console.log("检查更新");
+    //执行自动更新检查
+    ipcMain.on("checkForUpdate", () => {
         autoUpdater.checkForUpdates();
     })
     // 通过main进程发送事件给renderer进程，提示更新信息
     function sendUpdateMessage(text) {
-        let issend=false
-        win.forEach(e=>{
-            if(!issend){
-                issend=true
-                e.send('message', { type: "updata", data: text })
-            }
-        })
+        if (!issend) {
+            issend = true
+            // console.log("--------------------2", winobj);
+            winobj.get("001") ? winobj.get("001").send('message', { type: "updata", data: text }) : winobj.get("002").send('message', { type: "updata", data: text })
+        }
     }
     //更新方法
     autoUpdater.checkForUpdates();
     console.log("进入更新了")
+}
+//执行更新
+export let startUpdata = () => {
+    autoUpdater.quitAndInstall(); //更新
 }

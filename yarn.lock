@@ -9273,6 +9273,11 @@ querystringify@^2.1.1:
   resolved "https://registry.npm.taobao.org/querystringify/download/querystringify-2.1.1.tgz#60e5a5fd64a7f8bfa4d2ab2ed6fdf4c85bad154e"
   integrity sha1-YOWl/WSn+L+k0qsu1v30yFutFU4=
 
+rage-edit@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.nlark.com/rage-edit/download/rage-edit-1.2.0.tgz#991860a60fef934d8a6d0f057e55786b02f94a2b"
+  integrity sha1-mRhgpg/vk02KbQ8FflV4awL5Sis=
+
 randomatic@^3.0.0:
   version "3.1.1"
   resolved "https://registry.npm.taobao.org/randomatic/download/randomatic-3.1.1.tgz#b776efc59375984e36c537b2f51a1f0aff0da1ed"

@@ -1,6 +1,6 @@
 {
   "name": "l8",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "author": "oa.w3cjs.cn",
   "description": "聊8",
   "license": "null",
@@ -23,7 +23,7 @@
   },
   "build": {
     "productName": "聊8",
-    "appId": "webrtc.w3cjs.cn",
+    "appId": "com.l8.lt",
     "directories": {
       "output": "build"
     },
@@ -70,6 +70,9 @@
       "requestedExecutionLevel": "highestAvailable"
     },
     "linux": {
+      "target": [
+        "deb"
+      ],
       "icon": "build/icons"
     }
   },
@@ -87,6 +90,7 @@
     "koa-static": "^5.0.0",
     "moment": "^2.29.1",
     "qs": "^6.10.1",
+    "rage-edit": "^1.2.0",
     "sqlite3": "^5.0.2",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",

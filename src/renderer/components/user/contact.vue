@@ -60,6 +60,7 @@ export default {
     },
     searchfun() {
       if (this.uuid == "") return this.err("请输入账号");
+
       this.post("/lt/searchUser", {
         search: this.uuid,
       }).then((res) => {

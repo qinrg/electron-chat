@@ -2,21 +2,22 @@
  * @Author: qinruiguang
  * @LastEditors: qinruiguang
  * @Date: 2021-08-02 09:16:12
- * @LastEditTime: 2021-08-09 16:43:09
+ * @LastEditTime: 2021-08-26 17:24:13
  */
 // import { eleupdata } from "./eleUpdata";
 
 //托盘和菜单
-export let trays = (e, win, ipc) => {
-    let {
-        Menu,
-        Tray,
-        shell,
-        globalShortcut,
-        app
-    } = require("electron")
-    //系统托盘图标目录
-    let path = require('path') //路径管理
+let {
+    Menu,
+    Tray,
+    shell,
+    ipcMain,
+    globalShortcut,
+    app
+} = require("electron")
+//系统托盘图标目录
+let path = require('path') //路径管理
+export let trays = (e) => {
     let trayIcon = path.join(__dirname, "tray");
     let appTray = new Tray(path.join(trayIcon, "icon.1.png"));
     //系统托盘右键菜单
@@ -41,8 +42,8 @@ export let trays = (e, win, ipc) => {
             label: "检查更新",
             icon: trayIcon + '/3.png',
             click: function () {
-                win.get("001") ? win.get("001").send("message", { type: 'close-main-window' }) : ""//检查更新
-                win.get("002") ? win.get("002").send("message", { type: 'close-main-window' }) : ""//检查更新
+                winobj.get("001") ? winobj.get("001").send("message", { type: 'close-main-window' }) : ""//检查更新
+                winobj.get("002") ? winobj.get("002").send("message", { type: 'close-main-window' }) : ""//检查更新
 
             }
         },
@@ -85,10 +86,7 @@ export let trays = (e, win, ipc) => {
             //主窗口显示隐藏切换
             // win.isVisible() ? win.hide() : win.show();
             // win.show();
-            win.forEach(e => {
-                e.show()
-
-            })
+            winobj.get("001") ? winobj.get("001").show() : winobj.get("002").show()
         }
     });
 }

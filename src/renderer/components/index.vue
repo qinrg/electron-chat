@@ -64,20 +64,30 @@
             <div class="block" v-if="activeName == 'message'">
               <div
                 class="line"
-                v-for="(line, j) in item.data"
+                v-for="(line, j) in msgList"
                 :key="line.id"
                 :class="{ action: line.action }"
-                @click="onclickLine(i, j)"
-                v-if="line.user_obj"
+                @click="onclickLine(line, j)"
+                @contextmenu="rimenu"
               >
-                <img class="img" :src="line.user_obj.img" alt="" />
+                <img
+                  class="img"
+                  :src="line.img"
+                  alt=""
+                  @mouseenter="suspended($event, 0)"
+                  @mouseleave="suspended($event, 1)"
+                />
                 <div class="text">
                   <div class="name">
-                    {{ line.user_obj.uuid }}
+                    {{ line.name }}
                   </div>
-                  <div class="motto">
-                    {{ dispose(line.text) }}
-                  </div>
+                  <div
+                    class="motto"
+                    v-html="htmlzy(dispose(line.content))"
+                  ></div>
+                </div>
+                <div class="time">
+                  {{ timerfun(line.time) }}
                 </div>
               </div>
             </div>
@@ -102,8 +112,15 @@
                     :key="jl"
                     :class="{ action: line.action }"
                     @click="onclick_grline(i, gi, jl)"
+                    @contextmenu="rimenu"
                   >
-                    <img class="img" :src="line.img" alt="" />
+                    <img
+                      class="img"
+                      :src="line.img"
+                      alt=""
+                      @mouseenter="suspended($event, 0)"
+                      @mouseleave="suspended($event, 1)"
+                    />
                     <div class="text">
                       <div class="name">
                         {{ line.name }}
@@ -148,6 +165,17 @@
         </div>
       </div>
     </div>
+    <div class="rmenu" v-show="rmenu" ref="rmenu">
+      <div
+        class="line"
+        v-for="(item, i) in rmenuList"
+        :key="i"
+        @click="rmenuFun(item)"
+      >
+        <i v-if="item.icon" :class="item.icon"></i>
+        {{ item.name }}
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -161,34 +189,72 @@ export default {
       search: "", //搜索内容
       activeName: "message", //显示块
       width: "",
+      height: "",
       wsUrl: null,
       searchBlurView: false, //搜索视图
+      msgList: [], //消息组
+      userList: [],
       tabsList: [], //消息组
       grodList: [], //联系组
       clickIs: 0, //鼠标双击出来
       timer: null, //时间差
       menuShow: false, //菜单显示
       fdmenu: true,
+      rmenu: false, //右键菜单
+      rmenuList: [
+        {
+          id: 1,
+          name: "发送即时通讯",
+          icon: "el-icon-chat-dot-square",
+        },
+        {
+          id: 2,
+          name: "查看资料",
+          icon: "",
+        },
+        {
+          id: 3,
+          name: "消息记录",
+          icon: "el-icon-time",
+        },
+        {
+          id: 4,
+          name: "删除好友",
+          icon: "",
+        },
+      ],
     };
   },
   created() {
     this.width = window.innerWidth;
+    this.height = window.innerHeight;
     //监听后端返回的信息
     window.addEventListener("wsOnmessage", this.onmessage);
     window.onresize = () => {
       this.width = window.innerWidth;
+      this.height = window.innerHeight;
     };
     window.addEventListener("message", (r) => {
       if (!r.detail) return;
       let d = r.detail;
-      if (d.type == "userObj") {
-        localStorage.setItem("userObj", JSON.stringify(d.data));
-        this.user = d.data;
-        this.user.motto =
-          "时间让我们从过去到现在，冲淡了是回忆。再美好，也经不住遗忘，再悲伤，也抵不过时间，过去的了就过去吧！...";
-      }
-      if (d.type == "ltone") {
-        sendWSPush(d);
+      switch (d.type) {
+        case "userObj":
+          debugger;
+          localStorage.setItem("userObj", JSON.stringify(d.data));
+          localStorage.setItem("config", JSON.stringify(d.config));
+          this.user = d.data;
+          this.user.motto = "";
+          break;
+        case "ltone":
+          this.pushFunlist(d);
+          sendWSPush(d);
+          break;
+        case "msgLimit":
+          console.log(d);
+          sendWSPush(d);
+          break;
+        default:
+          break;
       }
     });
     //只想缓存用户信息
@@ -217,6 +283,45 @@ export default {
   },
   mounted() {},
   methods: {
+    htmlzy(v) {
+      let d = v.replace(/\[i_f\d+\]/gi, (v) => {
+        let g = v.substr(1, v.length - 2);
+        console.log(216, g);
+        return `<img class="meme_img" src="${require("../assets/icon/" +
+          g +
+          ".gif")}">`;
+      });
+      // console.log(d);
+      return d;
+    },
+    suspended(e, v) {
+      console.log(e);
+      this.ipc.send("message", { type: "suspended", t: v, x: e.x, y: e.y });
+    },
+    rmenuFun(d) {
+      console.log(d);
+    },
+    rimenu(e) {
+      let h = this.rmenuList.length * 30 + 16;
+      console.log(h);
+      let x = e.pageX + 180 >= this.width ? this.width - 184 : e.pageX;
+      let y = e.pageY + h >= this.height ? this.height - h - 4 : e.pageY;
+      setTimeout(() => {
+        this.$refs.rmenu.style.top = `${y}px`;
+        this.$refs.rmenu.style.left = `${x}px`;
+        this.rmenu = true;
+      }, 1);
+
+      console.log("1212121", this.$refs, e.pageX, e.pageY);
+    },
+    timerfun(d) {
+      if (!d) return "";
+      if (+new Date() - d >= 86400000) {
+        return this.$moment(d * 1).format("MM-DD");
+      } else {
+        return this.$moment(d * 1).format("HH:mm");
+      }
+    },
     dispose(d) {
       if (!d) return "";
       return this.getBase(d);
@@ -231,10 +336,15 @@ export default {
       this.$ele.shell.openExternal("https://w3cjs.cn");
     },
     mainClick(e) {
+      this.rmenu = false;
       this.menuShow = false;
     },
     handleChange() {},
     handleLogin() {
+      sendWSPush({
+        type: "msgList",
+        name: this.user.uuid,
+      });
       sendWSPush({
         type: "getMessageList",
         name: this.user.uuid,
@@ -254,14 +364,14 @@ export default {
           //链接开始
           this.handleLogin(data.success);
           break;
-        case "getMessageList":
+        case "msgList":
           // console.log(data);
-          let userList = JSON.parse(data.msgList).map((e) => {
+          this.msgList = JSON.parse(data.msgList).map((e) => {
             e["action"] = false;
-            e.user_obj ? (e.user_obj = { ...JSON.parse(e.user_obj) }) : "";
             return e;
           });
-
+          break;
+        case "grodList":
           let grodList = data.grodList.map((e) => {
             let s = JSON.parse(e.list);
             if (s.length >= 1) {
@@ -278,7 +388,6 @@ export default {
           this.tabsList = [
             {
               name: "message",
-              data: userList,
             },
             {
               name: "connection",
@@ -297,12 +406,61 @@ export default {
           break;
         case "ltone":
           let d = data;
+          this.updataFuncList(d);
           d.t = "pull";
           this.ipc.send("message", data);
           break;
-
+        case "msgLimit":
+          data.type = "setLimit";
+          console.log(data);
+          this.ipc.send("message", data);
+          break;
         default:
           break;
+      }
+    },
+    pushFunlist(d) {
+      //   debugger
+      //   let list = localStorage.getItem("msglist");
+      // if (list) {
+      //   list = JSON.parse(list);
+      //   console.log("-----------",d,list)
+      //   let user = list.find((e) => this.urlParam("id").indexOf(e.uuid) >= 0);
+      //   let index = this.msgList.findIndex((e) => e.uuid == d.uuid);
+      //   this.$set(this.msgList, index, user);
+      // }
+      let index = this.msgList.findIndex((e) => e.uuid == d.yourid);
+      if (index >= 0) {
+        let user = this.msgList[index];
+        user.text = d.text;
+        user.time = +new Date();
+        user.type = d.type;
+        user.content = d.text;
+        this.$set(this.msgList, index, user);
+      } else {
+        let lists = localStorage.getItem("msglist");
+        if (lists) {
+          lists = JSON.parse(lists);
+          console.log(lists);
+          let userone = lists.find((e) => e.uuid == d.yourid);
+          console.log(userone);
+          d["time"] = +new Date();
+          d["img"] = userone.img;
+          d["name"] = userone.name;
+          console.log(userone);
+          this.msgList.push(d);
+        }
+      }
+    },
+    updataFuncList(d) {
+      let user = JSON.parse(d.yuser);
+      let index = this.msgList.findIndex((e) => e.uuid == d.sender);
+      console.log(index);
+      if (index >= 0) {
+        user.content = d.text;
+        user.time = d.time;
+        user.type = d.type;
+        this.$set(this.msgList, index, user);
       }
     },
     getData(u) {
@@ -358,10 +516,10 @@ export default {
         this.clickIs = 0;
       }, 300);
     },
-    onclickLine(i, j) {
+    onclickLine(d, j) {
       this.clickIs++;
       if (this.timer) return;
-      this.tabsList[i].data.map((e, z) => {
+      this.msgList.map((e, z) => {
         if (j == z) {
           e.action = true;
         } else {
@@ -371,7 +529,7 @@ export default {
       });
       this.timer = setTimeout(() => {
         if (this.clickIs >= 2) {
-          this.openViewMsg(this.tabsList[i].data[j].user_obj);
+          this.openViewMsg(d);
         }
         this.timer = null;
         this.clickIs = 0;
@@ -600,6 +758,26 @@ export default {
         > .message,
         > .connection {
           overflow: hidden;
+          &::-webkit-scrollbar {
+            position: absolute;
+            width: 0px;
+            height: 0px;
+            right: 0;
+          }
+          &::-webkit-scrollbar-thumb {
+            background-color: rgba(25, 135, 209, 0.5);
+            border-radius: 5px;
+            position: absolute;
+            right: 0;
+          }
+
+          &::-webkit-scrollbar-track {
+            position: absolute;
+            right: 0;
+            width: 0;
+            height: 0px;
+            margin-right: 0px;
+          }
           &:hover {
             overflow-y: scroll;
           }
@@ -610,6 +788,7 @@ export default {
               display: flex;
               flex-direction: row;
               padding: 0 8px;
+              position: relative;
               &.action {
                 background: rgba(0, 0, 0, 0.09);
               }
@@ -644,6 +823,12 @@ export default {
                   -webkit-app-region: none;
                 }
               }
+              > .time {
+                position: absolute;
+                right: 12px;
+                bottom: 8px;
+                color: #8a8888;
+              }
             }
             > .gr_line {
               > .title {
@@ -675,7 +860,7 @@ export default {
     left: 0;
     bottom: 0;
     background: rgba(255, 255, 255, 0.85);
-    z-index: 9999;
+    z-index: 6;
     padding: 0 4px;
     > .tabs {
       > .menu {
@@ -707,6 +892,34 @@ export default {
         &:hover {
           background: rgba(0, 0, 0, 0.05);
         }
+      }
+    }
+  }
+  > .rmenu {
+    position: fixed;
+    z-index: 7;
+    width: 180px;
+    background: #fff;
+    padding: 8px 0px;
+    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.15);
+    color: #515151;
+    > .line {
+      height: 30px;
+      line-height: 30px;
+      padding-right: 8px;
+      padding-left: 40px;
+      position: relative;
+      > i {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        left: 12px;
+        top: 0;
+        font-size: 18px;
+      }
+      &:hover {
+        background: rgba(0, 0, 0, 0.05);
       }
     }
   }

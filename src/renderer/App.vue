@@ -9,6 +9,7 @@
 </template>
 
 <script>
+import { getbase64 } from "./assets/getdosktop";
 export default {
   name: "guang",
   data() {
@@ -78,15 +79,25 @@ export default {
           break;
         case "close-main-window":
           this.ipc.send("message", { type: "close-main-window" });
+        case "getdosktop":
+          getbase64().then((res) => {
+            this.ipc.send("message", {
+              type: "snipping",
+              view: this.urlParam("id"),
+              isView: 1,
+              data: res,
+            });
+          });
+          break;
         default:
           break;
       }
     });
     // this.ipc.send("message", { type: "userObj" });
-    const remote = this.$ele.remote;
-    const Menu = remote.Menu;
-    const MenuItem = remote.MenuItem;
-    const shell = this.$ele.shell;
+    // const remote = this.$ele.remote;
+    // const Menu = remote.Menu;
+    // const MenuItem = remote.MenuItem;
+    // const shell = this.$ele.shell;
     // menu.append(
     //   new MenuItem({ label: "更新", type: "checkbox", checked: true })
     // ); //选中
@@ -311,5 +322,10 @@ export default {
   right: 0;
   flex-direction: column;
   text-align: center;
+}
+.meme_img {
+  width: 16px;
+  height: 16px;
+  vertical-align: sub;
 }
 </style>
